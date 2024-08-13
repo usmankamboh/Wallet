@@ -1,9 +1,7 @@
 const express = require('express');
 const { ethers } = require('ethers');
-const { PrismaClient } = require('@prisma/client');
 const app = express();
 app.use(express.json());
-const prisma = new PrismaClient();
 
 // create a new wallet endpoint
 app.get('/create-wallet', (req, res) => {
@@ -19,7 +17,7 @@ app.get('/create-wallet', (req, res) => {
 // Get ETH balance endpoint
 app.get('/get-balance/:address', async (req, res) => {
     const { address } = req.params;
-    const provider = new ethers.providers.JsonRpcProvider("paste your infura key from infura as shown in video ");
+    const provider = new ethers.providers.JsonRpcProvider("paste your infura key  ");
     if (!address) {
         return res.status(400).json({ error: 'Missing address parameter' });
     }
@@ -34,24 +32,24 @@ app.get('/get-balance/:address', async (req, res) => {
 });
 
 // transfer Native currency Endpoint
-app.post('/transfer', async (req, res) => {
-  const { privateKey,to, amount } = req.body;
-  const provider = new ethers.providers.JsonRpcProvider("paste your infura key from infura as shown in video ");
-  if (!privateKey || !to || !amount) {
-    return res.status(400).json({ error: 'Missing "privatekey" "to" or "amount" in request body' });
+app.post('/transfer-native', async (req, res) => {
+  const { privateKey,toAddress, amount } = req.body;
+  const provider = new ethers.providers.JsonRpcProvider("paste your infura key ");
+  if (!privateKey || !toAddress || !amount) {
+    return res.status(400).json({ error: 'Missing "privatekey" "toAddress" or "amount" in request body' });
   }
   try {
     const wallet = new ethers.Wallet(privateKey, provider);
     const tx = {
-      to: to,
-      value: ethers.parseEther(amount.toString())
+      to: toAddress,
+      value: ethers.utils.parseEther(amount.toString())
     };
     const txResponse = await wallet.sendTransaction(tx);
     const receipt = await txResponse.wait();
     res.status(200).json({
+      success: true,
       transactionHash: txResponse.hash,
-      blockNumber: receipt.blockNumber,
-      status: receipt.status
+      receipt
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -61,7 +59,7 @@ app.post('/transfer', async (req, res) => {
 // Transfer tokens endpoint
 app.post('/transfer-token', async (req, res) => {
     const { privateKey, toAddress, amount, tokenAddress } = req.body;
-    const provider = new ethers.providers.JsonRpcProvider("paste your infura key from infura as shown in video ");
+    const provider = new ethers.providers.JsonRpcProvider("paste your infura key ");
     if (!privateKey || !toAddress || !amount || !tokenAddress) {
         return res.status(400).json({ error: 'Missing parameters' });
     }
@@ -80,33 +78,10 @@ app.post('/transfer-token', async (req, res) => {
     }
 });
 
-// to get all tokens addresses which user hold endpoint 
-app.get('/get-all-tokens/:address', async (req, res) => {
-    const { address } = req.params;
-    const ETHERSCAN_API_KEY = 'paste your etherscan api key as shown in video';
-    try {
-        const response = await axios.get(`https://api.etherscan.io/api`, {
-            params: {
-                module: 'account',
-                action: 'tokentx',
-                address: address,
-                sort: 'asc',
-                apiKey: ETHERSCAN_API_KEY
-            }
-        });
-        const tokenTransfers = response.data.result;
-        const tokenAddresses = [...new Set(tokenTransfers.map(tx => tx.contractAddress))];
-        res.json({ tokens: tokenAddresses });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Something went wrong!' });
-    }
-});
-
 // Get token balance endpoint
 app.get('/get-token-balance/:address/:tokenAddress', async (req, res) => {
     const { address, tokenAddress } = req.params;
-    const provider = new ethers.providers.JsonRpcProvider("paste your infura key from infura as shown in video ");
+    const provider = new ethers.providers.JsonRpcProvider("paste your infura key ");
     if (!address || !tokenAddress) {
         return res.status(400).json({ error: 'Missing parameters' });
     }
@@ -124,40 +99,6 @@ app.get('/get-token-balance/:address/:tokenAddress', async (req, res) => {
         res.status(500).json({ error: 'Failed to retrieve balance', details: error.message });
     }
 });
-
-// store a transaction endpoint 
-app.get('/transactions', async (req, res) => {
-    const address = req.query.address;
-    const startblock = req.query.startblock || 0;
-    const endblock = req.query.endblock || 99999999;
-    const page = req.query.page || 1;
-    const offset = req.query.offset || 10;
-    const sort = req.query.sort || 'asc';
-    const ETHERSCAN_API_KEY = 'paste your etherscan api key as shown in video';
-    const ETHERSCAN_BASE_URL = 'https://api.etherscan.io/api';
-    if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
-    }
-    try {
-        const response = await axios.get(ETHERSCAN_BASE_URL, {
-            params: {
-                module: 'account',
-                action: 'txlist',
-                address,
-                startblock,
-                endblock,
-                page,
-                offset,
-                sort,
-                apikey: ETHERSCAN_API_KEY,
-            },
-        });
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: 'An error occurred while fetching transactions' });
-    }
-});
-
 
 // Start the server
 const port = 3000;
