@@ -2,7 +2,9 @@
 
 # changings
 1- Use your Own infura key according to your network 
+
 2- Make a account on infura (https://www.infura.io/) and create a key as shown in video (https://www.loom.com/share/679806bf0a3b46fdaa2a73a4ca36a127?sid=0deed9aa-470f-4618-98d4-562eef6a93d9)
+
 3- Paste the link of infura key in the code where mention "paste your infura key "
 
 # Step to run project
