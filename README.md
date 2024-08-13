@@ -20,7 +20,7 @@
                   e.g request body : "privateKey": "", "toAddress": "" , "amount" : "" , "tokenAddress" : ""
 5- GET Request :  /get-token-balance/:address/:tokenAddress  (to get the balance of any tokenAddress of address)
                   e.g get-token-balance/0x1234325245645643/0xasdfgdsfdsafasfsaasd
-
+                  
 # Endpoint Details appPrisma.js 
 1- GET Request :  /create-wallet  (to create a new wallet)
 2- GET Request :  /get-balance/:address  (to get the balance of ETH,BNB of address)
