@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  publicAddress String   @unique
+  privateAddress String
+  balances      Balance[]
+  tokenBalances TokenBalance[]
+  transactions  Transaction[]
+}
+
+model Balance {
+  id            Int    @id @default(autoincrement())
+  publicAddress String
+  balance       String
+  userId        Int
+  user          User   @relation(fields: [userId], references: [id])
+}
+
+model TokenBalance {
+  id            Int    @id @default(autoincrement())
+  publicAddress String
+  tokenAddress  String
+  balance       String
+  userId        Int
+  user          User   @relation(fields: [userId], references: [id])
+}
+
+model Transaction {
+  id            Int    @id @default(autoincrement())
+  publicAddress String
+  txHash        String
+  userId        Int
+  user          User   @relation(fields: [userId], references: [id])
+}
